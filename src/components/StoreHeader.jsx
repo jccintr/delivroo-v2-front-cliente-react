@@ -28,7 +28,7 @@ export default function StoreHeader({ menu }) {
 
   return (
     <header className="bg-white">
-      <div className="h-28 bg-brand sm:h-36" style={{ backgroundImage: 'radial-gradient(circle at 20% 120%, rgba(255,255,255,.18), transparent 55%), radial-gradient(circle at 90% -20%, rgba(255,255,255,.14), transparent 45%)' }} />
+      <div className="h-28 bg-brand sm:h-28" style={{ backgroundImage: 'radial-gradient(circle at 20% 120%, rgba(255,255,255,.18), transparent 55%), radial-gradient(circle at 90% -20%, rgba(255,255,255,.14), transparent 45%)' }} />
       <div className="mx-auto max-w-6xl px-4">
         <div className="-mt-10 flex items-end gap-4 sm:-mt-12">
           <Logo store={store} className="size-24 text-4xl sm:size-28" />
