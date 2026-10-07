@@ -31,3 +31,6 @@ export const createOrder = (slug, payload) =>
   request(`/api/public/stores/${encodeURIComponent(slug)}/orders`, { method: 'POST', body: JSON.stringify(payload) });
 
 export const getOrder = (publicId, signal) => request(`/api/public/orders/${encodeURIComponent(publicId)}`, { signal });
+
+/** URL do fluxo SSE do acompanhamento (o publicId aleatório é o segredo; não precisa de login) */
+export const orderEventsUrl = (publicId) => `${BASE}/api/public/orders/${encodeURIComponent(publicId)}/events`;

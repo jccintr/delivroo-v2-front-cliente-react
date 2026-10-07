@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { ApiError, getMenu, getOrder } from '../api/client.js';
+import { ApiError, getMenu, getOrder, orderEventsUrl } from '../api/client.js';
+import { connectEvents } from '../api/sse.js';
 import { formatBRL } from '../lib/money.js';
 import { maskPhone, whatsappLink } from '../lib/phone.js';
 import { NEGATIVE, STEP_HINT, STEP_LABEL, TERMINAL, stepsFor } from '../lib/orderStatus.js';
@@ -62,6 +63,7 @@ export default function OrderPage() {
   const [error, setError] = useState(null);
   const [pix, setPix] = useState(null);
   const pixLoaded = useRef(false);
+  const [conn, setConn] = useState('connecting'); // connecting | live | offline
 
   const fetchOrder = useCallback(async (signal) => {
     try {
@@ -81,17 +83,39 @@ export default function OrderPage() {
     return () => controller.abort();
   }, [fetchOrder]);
 
-  // atualização automática enquanto o pedido não terminou (pausa com a aba escondida)
+  const loaded = !!order;
+  const finishedOrder = !!order && TERMINAL.has(order.status);
+
+  // tempo real: a loja muda o status e a tela atualiza na hora (SSE). Conecta só com o pedido já carregado
+  // (pedido inexistente não fica tentando reconectar) e desconecta quando o pedido termina.
+  useEffect(() => {
+    if (!loaded || finishedOrder) return undefined;
+    return connectEvents(
+      () => Promise.resolve(orderEventsUrl(publicId)),
+      {
+        'order.updated': (data) => {
+          setOrder((prev) => {
+            if (prev && prev.status !== data.status) navigator.vibrate?.(200);
+            return data;
+          });
+          setError(null);
+        },
+      },
+      { onStatus: setConn },
+    );
+  }, [publicId, loaded, finishedOrder]);
+
+  // rede de segurança: busca de tempos em tempos (devagar com o SSE ao vivo; pausa com a aba escondida)
   useEffect(() => {
     if (!order || TERMINAL.has(order.status)) return undefined;
     const tick = () => { if (!document.hidden) fetchOrder(); };
-    const id = setInterval(tick, 15000);
+    const id = setInterval(tick, conn === 'live' ? 60000 : 15000);
     document.addEventListener('visibilitychange', tick);
     return () => { clearInterval(id); document.removeEventListener('visibilitychange', tick); };
-  }, [order, fetchOrder]);
+  }, [order, conn, fetchOrder]);
 
   useEffect(() => {
-    if (order) document.title = `Pedido #${order.orderNumber} — ${order.store.name}`;
+    if (order) document.title = `${STEP_LABEL[order.status] ?? ''} · Pedido #${order.orderNumber} — ${order.store.name}`;
   }, [order]);
 
   // chave Pix vem do cardápio da loja
@@ -156,7 +180,11 @@ export default function OrderPage() {
           <section aria-live="polite" className="rounded-3xl border border-line bg-white p-5 shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
               <h2 className="text-lg font-extrabold">{finished ? STEP_LABEL[order.status] : 'Acompanhe seu pedido'}</h2>
-              {!finished && <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted"><span className="size-2 animate-pulse rounded-full bg-emerald-500" />ao vivo</span>}
+              {!finished && (
+                <span data-testid="live-status" data-conn={conn} className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
+                  <span className={`size-2 rounded-full ${conn === 'live' ? 'animate-pulse bg-emerald-500' : 'bg-amber-400'}`} />{conn === 'live' ? 'ao vivo' : 'atualizando…'}
+                </span>
+              )}
             </div>
             <Timeline order={order} />
           </section>
