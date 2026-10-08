@@ -3,15 +3,15 @@ import { KEYS, load } from '../lib/storage.js';
 import { formatBRL } from '../lib/money.js';
 import { SlugForm } from './NotFoundPage.jsx';
 import Icon from '../components/Icon.jsx';
+import Logo from '../components/Logo.jsx';
 
 export default function HomePage() {
   const orders = load(KEYS.orders, []);
   return (
     <div className="mx-auto min-h-dvh max-w-lg px-6 py-14">
       <div className="text-center">
-        <div className="mx-auto grid size-16 place-items-center rounded-2xl bg-brand text-on-brand"><Icon name="bag" className="size-8" /></div>
-        <h1 className="mt-5 text-3xl font-extrabold">Delivroo</h1>
-        <p className="mt-2 text-muted">Cardápio digital: peça direto da sua loja favorita, sem complicação.</p>
+        <h1 className="flex justify-center"><Logo markClassName="size-14" textClassName="text-4xl" className="gap-3" /></h1>
+        <p className="mt-4 text-muted">Cardápio digital: peça direto da sua loja favorita, sem complicação.</p>
       </div>
       <div className="mt-8">
         <p className="mb-2 text-sm font-semibold">Digite o endereço da loja</p>

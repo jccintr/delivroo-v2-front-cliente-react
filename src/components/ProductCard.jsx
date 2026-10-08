@@ -15,15 +15,20 @@ export default function ProductCard({ product, inCart, onOpen }) {
           <h3 className="font-bold leading-snug">{product.name}</h3>
           {product.description && <p className="mt-1 line-clamp-2 text-sm leading-snug text-muted">{product.description}</p>}
         </div>
-        <p className="mt-2 text-sm font-bold text-stone-800">
-          {hasPriceRange(product) && <span className="mr-1 text-xs font-medium text-muted">a partir de</span>}
-          {formatBRL(price)}
-        </p>
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-bold text-stone-800">
+            {hasPriceRange(product) && <span className="mr-1 text-xs font-medium text-muted">a partir de</span>}
+            {formatBRL(price)}
+          </p>
+          {!product.imageUrl && inCart > 0 && <span className="shrink-0 rounded-full bg-brand px-2.5 py-0.5 text-xs font-extrabold text-on-brand">{inCart} no carrinho</span>}
+        </div>
       </div>
-      <div className="relative shrink-0">
-        <Thumb product={product} className="size-24 rounded-xl sm:size-28" />
-        {inCart > 0 && <span className="absolute -right-1.5 -top-1.5 grid size-6 place-items-center rounded-full bg-brand text-xs font-extrabold text-on-brand shadow ring-2 ring-white">{inCart}</span>}
-      </div>
+      {product.imageUrl && (
+        <div className="relative shrink-0">
+          <Thumb product={product} className="size-24 rounded-xl sm:size-28" />
+          {inCart > 0 && <span className="absolute -right-1.5 -top-1.5 grid size-6 place-items-center rounded-full bg-brand text-xs font-extrabold text-on-brand shadow ring-2 ring-white">{inCart}</span>}
+        </div>
+      )}
     </button>
   );
 }

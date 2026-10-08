@@ -18,10 +18,11 @@ function defaultSelections(product) {
   return result;
 }
 
+/** Foto do produto. Sem foto não renderiza nada: quem usa decide o layout sem imagem. */
 export const Thumb = ({ product, className = '' }) => (
   product.imageUrl
     ? <img src={product.imageUrl} alt={product.name} loading="lazy" className={`${className} object-cover`} />
-    : <div className={`${className} grid place-items-center bg-gradient-to-br from-stone-100 to-stone-200 text-3xl font-extrabold text-stone-400`} aria-hidden="true">{product.name.trim().charAt(0).toUpperCase()}</div>
+    : null
 );
 
 /**
@@ -74,16 +75,25 @@ export default function ProductSheet({ product, initial, canOrder, onClose, onCo
         </div>
       )}
     >
-      <div className="relative">
-        <Thumb product={product} className="aspect-[16/9] w-full" />
-        <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-white/95 text-stone-700 shadow-md hover:bg-white">
-          <Icon name="x" className="size-5" />
-        </button>
-      </div>
+      {product.imageUrl && (
+        <div className="relative">
+          <Thumb product={product} className="aspect-[16/9] w-full" />
+          <button type="button" onClick={onClose} aria-label="Fechar" className="absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-white/95 text-stone-700 shadow-md hover:bg-white">
+            <Icon name="x" className="size-5" />
+          </button>
+        </div>
+      )}
 
       <div className="space-y-5 px-5 py-5">
         <div>
-          <h2 className="text-2xl font-extrabold leading-tight">{product.name}</h2>
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-2xl font-extrabold leading-tight">{product.name}</h2>
+            {!product.imageUrl && (
+              <button type="button" onClick={onClose} aria-label="Fechar" className="grid size-9 shrink-0 place-items-center rounded-full bg-stone-100 text-stone-600 hover:bg-stone-200">
+                <Icon name="x" className="size-5" />
+              </button>
+            )}
+          </div>
           {product.description && <p className="mt-1.5 text-sm leading-relaxed text-muted">{product.description}</p>}
           {hasPriceRange(product) && product.variants.length === 1 && <p className="mt-2 text-sm font-semibold">a partir de {formatBRL(fromPrice(product))}</p>}
         </div>
