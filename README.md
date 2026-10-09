@@ -25,7 +25,7 @@ Em desenvolvimento o Vite faz proxy de `/api` para `http://localhost:3000` (a AP
 | Rota | Tela |
 |---|---|
 | `/` | Início: digitar o endereço da loja + pedidos feitos neste aparelho |
-| `/:slug` | Cardápio da loja |
+| `/:slug` | Cardápio da loja. Loja inexistente = "Loja não encontrada"; loja bloqueada ou com assinatura suspensa = **"Cardápio indisponível"** (a API responde `403 MENU_UNAVAILABLE`, sem revelar o motivo). Se isso acontecer no meio do checkout, a sacola é mantida e a tela de indisponível aparece |
 | `/:slug/checkout` | Finalizar pedido |
 | `/pedido/:publicId` | Acompanhamento em tempo real (SSE; conferência de segurança a cada 60 s, ou 15 s se a conexão cair) |
 

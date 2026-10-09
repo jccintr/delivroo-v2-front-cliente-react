@@ -29,6 +29,21 @@ export function StoreNotFound({ slug }) {
   );
 }
 
+// Loja bloqueada ou com assinatura suspensa: mensagem neutra, sem dizer o motivo ao cliente.
+export function StoreUnavailable({ onRetry }) {
+  return (
+    <div className="mx-auto grid min-h-dvh max-w-md place-items-center px-6 text-center">
+      <div>
+        <div className="mx-auto grid size-16 place-items-center rounded-full bg-stone-100 text-stone-500"><Icon name="store" className="size-8" /></div>
+        <h1 className="mt-4 text-2xl font-extrabold">Cardápio indisponível</h1>
+        <p className="mt-1 text-muted">Este cardápio não está disponível no momento. Tente novamente mais tarde ou fale diretamente com a loja.</p>
+        {onRetry && <button type="button" onClick={onRetry} className="mt-6 h-12 rounded-full border border-line bg-white px-8 font-bold">Tentar novamente</button>}
+        <p className="mt-4"><Link to="/" className="text-sm font-semibold text-muted underline">Ir para o início</Link></p>
+      </div>
+    </div>
+  );
+}
+
 export default function NotFoundPage() {
   return (
     <div className="mx-auto grid min-h-dvh max-w-md place-items-center px-6 text-center">

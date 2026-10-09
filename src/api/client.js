@@ -10,6 +10,9 @@ export class ApiError extends Error {
   }
 }
 
+/** O servidor responde 403 + MENU_UNAVAILABLE quando a loja está bloqueada ou suspensa (sem dizer o motivo). */
+export const isMenuUnavailable = (err) => err instanceof ApiError && err.status === 403 && err.code === 'MENU_UNAVAILABLE';
+
 async function request(path, options = {}) {
   let res;
   try {

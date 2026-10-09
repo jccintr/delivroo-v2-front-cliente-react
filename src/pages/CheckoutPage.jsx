@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext.jsx';
-import { createOrder } from '../api/client.js';
+import { createOrder, isMenuUnavailable } from '../api/client.js';
 import { toApiOptions } from '../lib/pricing.js';
 import { formatBRL, parseBRLToCents } from '../lib/money.js';
 import { isValidPhone, maskPhone, onlyDigits } from '../lib/phone.js';
@@ -112,6 +112,8 @@ export default function CheckoutPage() {
       cart.clear();
       navigate(`/pedido/${order.publicId}`, { replace: true, state: { fresh: true } });
     } catch (err) {
+      // a loja foi bloqueada/suspensa enquanto o cliente montava o pedido: recarrega e cai na tela "Cardápio indisponível" (a sacola fica guardada)
+      if (isMenuUnavailable(err)) { setSubmitting(false); cart.reload(); return; }
       setFailure(err);
       setSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });

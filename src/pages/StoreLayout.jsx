@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router-dom';
-import { ApiError, getMenu } from '../api/client.js';
+import { ApiError, getMenu, isMenuUnavailable } from '../api/client.js';
 import { StoreProvider } from '../context/StoreContext.jsx';
 import { brandColors, DEFAULT_BRAND } from '../lib/color.js';
 import Toast from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
-import { StoreNotFound } from './NotFoundPage.jsx';
+import { StoreNotFound, StoreUnavailable } from './NotFoundPage.jsx';
 
 function applyTheme(store) {
   const root = document.documentElement;
@@ -48,6 +48,7 @@ export default function StoreLayout() {
       .then((menu) => setState({ status: 'ready', menu }))
       .catch((err) => {
         if (err.name === 'AbortError') return;
+        if (isMenuUnavailable(err)) return setState({ status: 'unavailable' });
         setState({ status: err instanceof ApiError && err.status === 404 ? 'notfound' : 'error', message: err.message });
       });
   }, [slug]);
@@ -68,6 +69,7 @@ export default function StoreLayout() {
 
   if (state.status === 'loading') return <Skeleton />;
   if (state.status === 'notfound') return <StoreNotFound slug={slug} />;
+  if (state.status === 'unavailable') return <StoreUnavailable onRetry={() => { setState({ status: 'loading' }); load(); }} />;
   if (state.status === 'error') {
     return (
       <div className="mx-auto grid min-h-dvh max-w-md place-items-center px-6 text-center">
