@@ -2,26 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, Outlet, useParams } from 'react-router-dom';
 import { ApiError, getMenu, isMenuUnavailable } from '../api/client.js';
 import { StoreProvider } from '../context/StoreContext.jsx';
-import { brandColors, DEFAULT_BRAND } from '../lib/color.js';
+import { applyBrand } from '../lib/theme.js';
 import Toast from '../components/Toast.jsx';
 import Icon from '../components/Icon.jsx';
 import { StoreNotFound, StoreUnavailable } from './NotFoundPage.jsx';
 
-function applyTheme(store) {
-  const root = document.documentElement;
-  if (!store) {
-    root.style.removeProperty('--brand');
-    root.style.removeProperty('--on-brand');
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', DEFAULT_BRAND);
-    document.title = 'Delivroo — Cardápio digital';
-    return;
-  }
-  const { brand, onBrand } = brandColors(store);
-  root.style.setProperty('--brand', brand);
-  root.style.setProperty('--on-brand', onBrand);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', brand);
-  document.title = `${store.name} — Cardápio`;
-}
+const DEFAULT_TITLE = 'Delivroo — Cardápio digital';
 
 function Skeleton() {
   return (
@@ -61,8 +47,10 @@ export default function StoreLayout() {
   }, [load]);
 
   useEffect(() => {
-    applyTheme(state.status === 'ready' ? state.menu.store : null);
-    return () => applyTheme(null);
+    const store = state.status === 'ready' ? state.menu.store : null;
+    applyBrand(store);
+    document.title = store ? `${store.name} — Cardápio` : DEFAULT_TITLE;
+    return () => { applyBrand(null); document.title = DEFAULT_TITLE; };
   }, [state]);
 
   const reload = useCallback(() => load(), [load]);

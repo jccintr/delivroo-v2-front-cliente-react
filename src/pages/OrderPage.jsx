@@ -4,6 +4,7 @@ import { ApiError, getMenu, getOrder, orderEventsUrl } from '../api/client.js';
 import { connectEvents } from '../api/sse.js';
 import { formatBRL } from '../lib/money.js';
 import { maskPhone, whatsappLink } from '../lib/phone.js';
+import { useBrand } from '../lib/useBrand.js';
 import { NEGATIVE, STEP_HINT, STEP_LABEL, TERMINAL, stepsFor } from '../lib/orderStatus.js';
 import Icon from '../components/Icon.jsx';
 
@@ -64,6 +65,8 @@ export default function OrderPage() {
   const [pix, setPix] = useState(null);
   const pixLoaded = useRef(false);
   const [conn, setConn] = useState('connecting'); // connecting | live | offline
+
+  useBrand(order?.store); // acompanhamento usa o tema da loja, como o cardápio
 
   const fetchOrder = useCallback(async (signal) => {
     try {
