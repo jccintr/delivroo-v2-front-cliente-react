@@ -200,7 +200,7 @@ export default function CheckoutPage() {
           <Section title="Pagamento na entrega">
             <div role="radiogroup" className="space-y-2">
               {menu.paymentMethods.map((m) => (
-                <Choice key={m.id} checked={paymentId === m.id} onClick={() => { setPaymentId(m.id); setErrors((e) => ({ ...e, payment: undefined })); }} title={m.name} subtitle={m.type === 'PIX' ? 'Você recebe a chave Pix depois de enviar o pedido' : undefined} />
+                <Choice key={m.id} checked={paymentId === m.id} onClick={() => { setPaymentId(m.id); setErrors((e) => ({ ...e, payment: undefined })); }} title={m.name} subtitle={m.type === 'PIX' ? 'Depois de enviar o pedido você recebe o QR code e o Pix copia e cola' : undefined} />
               ))}
             </div>
             {errors.payment && <p role="alert" className="mt-2 text-sm font-medium text-red-600">{errors.payment}</p>}

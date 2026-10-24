@@ -18,7 +18,8 @@ async function request(path, options = {}) {
   try {
     res = await fetch(`${BASE}${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options.headers ?? {}) },
+      // com FormData (upload) o navegador define o Content-Type sozinho, com o "boundary"
+      headers: { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...(options.headers ?? {}) },
     });
   } catch {
     throw new ApiError(0, 'Sem conexão. Verifique sua internet e tente novamente.');
@@ -34,6 +35,14 @@ export const createOrder = (slug, payload) =>
   request(`/api/public/stores/${encodeURIComponent(slug)}/orders`, { method: 'POST', body: JSON.stringify(payload) });
 
 export const getOrder = (publicId, signal) => request(`/api/public/orders/${encodeURIComponent(publicId)}`, { signal });
+
+/** "Já paguei": aviso de pagamento Pix, com observação e comprovante (imagem ou PDF) opcionais. Devolve o pedido atualizado. */
+export function reportPayment(publicId, { note, file } = {}) {
+  const body = new FormData();
+  if (note?.trim()) body.append('note', note.trim());
+  if (file) body.append('receipt', file);
+  return request(`/api/public/orders/${encodeURIComponent(publicId)}/payment/report`, { method: 'POST', body });
+}
 
 /** URL do fluxo SSE do acompanhamento (o publicId aleatório é o segredo; não precisa de login) */
 export const orderEventsUrl = (publicId) => `${BASE}/api/public/orders/${encodeURIComponent(publicId)}/events`;

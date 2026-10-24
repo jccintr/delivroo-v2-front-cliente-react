@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { ApiError, getMenu, getOrder, orderEventsUrl } from '../api/client.js';
+import { ApiError, getOrder, orderEventsUrl } from '../api/client.js';
 import { connectEvents } from '../api/sse.js';
 import { formatBRL } from '../lib/money.js';
 import { maskPhone, whatsappLink } from '../lib/phone.js';
 import { useBrand } from '../lib/useBrand.js';
 import { NEGATIVE, STEP_HINT, STEP_LABEL, TERMINAL, stepsFor } from '../lib/orderStatus.js';
 import Icon from '../components/Icon.jsx';
+import PixPayment from '../components/PixPayment.jsx';
 
 const time = (iso) => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
@@ -38,32 +39,11 @@ function Timeline({ order }) {
   );
 }
 
-function PixBox({ pix }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try { await navigator.clipboard.writeText(pix.key); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* sem permissão */ }
-  };
-  return (
-    <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-      <h2 className="font-extrabold text-emerald-900">Pagamento via Pix</h2>
-      <p className="mt-1 text-sm text-emerald-900/80">Pague na entrega ou antecipe com a chave abaixo{pix.beneficiary ? ` (${pix.beneficiary})` : ''}.</p>
-      <div className="mt-3 flex items-center gap-2 rounded-2xl bg-white p-2 pl-4">
-        <code className="min-w-0 flex-1 truncate text-sm font-semibold">{pix.key}</code>
-        <button type="button" onClick={copy} className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-emerald-600 px-4 text-sm font-bold text-white hover:bg-emerald-700">
-          <Icon name="copy" className="size-4" />{copied ? 'Copiado!' : 'Copiar'}
-        </button>
-      </div>
-    </section>
-  );
-}
-
 export default function OrderPage() {
   const { publicId } = useParams();
   const { state } = useLocation();
   const [order, setOrder] = useState(null);
   const [error, setError] = useState(null);
-  const [pix, setPix] = useState(null);
-  const pixLoaded = useRef(false);
   const [conn, setConn] = useState('connecting'); // connecting | live | offline
 
   useBrand(order?.store); // acompanhamento usa o tema da loja, como o cardápio
@@ -119,13 +99,6 @@ export default function OrderPage() {
 
   useEffect(() => {
     if (order) document.title = `${STEP_LABEL[order.status] ?? ''} · Pedido #${order.orderNumber} — ${order.store.name}`;
-  }, [order]);
-
-  // chave Pix vem do cardápio da loja
-  useEffect(() => {
-    if (!order || order.payment.type !== 'PIX' || pixLoaded.current) return;
-    pixLoaded.current = true;
-    getMenu(order.store.slug).then((m) => { if (m.store.pixKey) setPix({ key: m.store.pixKey, beneficiary: m.store.pixBeneficiary }); }).catch(() => {});
   }, [order]);
 
   if (error?.notFound) {
@@ -193,7 +166,7 @@ export default function OrderPage() {
           </section>
         )}
 
-        {order.payment.type === 'PIX' && pix && !TERMINAL.has(order.status) && <PixBox pix={pix} />}
+        {!TERMINAL.has(order.status) && <PixPayment order={order} onOrderChange={setOrder} />}
 
         <section className="rounded-3xl border border-line bg-white p-5 shadow-sm">
           <h2 className="mb-1 text-lg font-extrabold">Itens do pedido</h2>
